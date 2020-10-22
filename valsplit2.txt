@@ -1,0 +1,239 @@
+#!/CS1420/coursework
+# Team 57
+
+if [ $# != 3 ]; then																## Checks if there are 3 files being passed, if there isn't
+	echo "There's not 3 arguments here!"													## the default files are used. Otherwise the files entered
+	echo "The default files will be used"													## are stored in variables so they can be accessed without
+	echo ""																	## having to re-read them again in the program.
+	s1=input.txt
+	s2=correct.txt
+	s3=incorrect.txt
+else
+	s1=$1
+	s2=$2
+	s3=$3
+fi
+
+
+
+checkInstruction(){																## The first word on each line is passed to the function
+	if [ $maths == "add" ] || [ $maths == "sub" ] || [ $maths == "addi" ] || [ $maths == "lw" ] || [ $maths == "sw" ]; then			## where it is compred with the mathematical terms that can be
+		s4="true"															## accepted.
+	else
+		tput setaf 1															## Sets the font colour to red to display the error message
+		echo "The MIPS instruction is not recognised"
+		s4="false"
+		tput setaf 7															## Sets the font colour back to white
+	fi
+}
+
+
+finalCheck(){
+if [[ $s4 == "true" ]] && [[ $s5 == "true" ]] && [[ $s6 == "true" ]] && [[ $s7 == "true" ]] && [[ $s8 == "true" ]];				## This function does the final check on each of the lines
+then																		## as this will ensure that the entire line can be accepted
+	echo "$maths $r1 $r2 $r3" >> $s2													## and will then overwrite the chosen files with the lines
+elif																		## of MIPS instructions which have either passed or failed.
+	[[ $s4 == "true" ]] && [[ $s5 == "true" ]] && [[ $s6 == "true" ]] && [[ $s8 == "false" ]]; then
+	echo "$maths $r1 $r2 $r3" >> $s2
+else
+	echo "$maths $r1 $r2 $r3" >> $s3
+fi
+}
+
+
+
+dollarSign1(){
+if [[ $var_Length != 3 ]]; then
+tput setaf 1
+echo "The First register is out of the range"
+tput setaf 7
+else
+	if [[ "$r1" =~ '$s'[0-7] ]] || [[ "$r1" =~ '$t'[0-9] ]]											## The dollar sign 1 function checks whether the remaining strings
+	then																	## on the line being read begin with $s(number) or $t(number)
+		s5="true"
+	else
+		tput setaf 1
+		echo "The First register contains a letter other than 's' or 't' or is missing a '$' symbol"
+		s5="false"
+		tput setaf 7
+	fi
+fi
+}
+
+
+dollarSign2(){
+string=$r2																	## Stores the entire string into a variable
+lengthOfString=($var_Length2-5)															## Stores the length of the string after the offset
+offset=${string:0:lengthOfString}														## Stores the offset into a variable
+bracket1=${string: -5:-4}															## Stores the certain charcter in the substring
+bracket2=${string: -1}																## stores the certain character in the substring
+letter=${string: -4:-2}																## Stores the certain characters in the substring ($ and letter)
+number=${string: -2:-1}																## Stores the certain character in the substring (register number)
+
+if [[ $offset -gt 32767 ]] || [[ $offset -lt 0 ]]; then												## Checks if the offset is greater than a 16 bit representation
+	tput setaf 1
+	echo "The Offset cannot be represented with 16 bits"
+	s6="false"
+	tput setaf 7
+else
+	if [[ $bracket1 != '(' ]]; then														## Checks that a bracket is used in the correct location of string
+		tput setaf 1
+		echo "There is a missing bracket after the offset"
+		s6="false"
+		tput setaf 7
+	else
+		if [[ "$letter" =~ '$s' ]]; then												## Checks the $s(number) is within a valid range
+			if [[ $number -gt 7 ]] || [[ $number -lt 0 ]]; then
+				tput setaf 1
+				echo "The base register is out of the range"
+				s6="false"
+				tput setaf 7
+			else
+				if [[ $bracket2 != ')' ]]; then											## Checks that a bracket is used after the base address
+					tput setaf 1
+					echo "There is a missing bracket after the Base address"
+					s6="false"
+					tput setaf 7
+				else
+					s6="true"
+				fi
+			fi
+
+		elif [[ "$letter" =~ '$t' ]]; then
+			if [[ $number -gt 9 ]] || [[ $number -lt 0 ]]; then									## Checks the $t(number) is within a valid range
+				tput setaf 1
+				echo "The base register is out of the range"
+				s6="false"
+				tput setaf 7
+			else
+				if [[ $bracket2 != ')' ]]; then											## Checks that a bracket is used after the base address
+					tput setaf 1
+					echo "There is a missing bracket after the Base address"
+					s6="false"
+					tput setaf 7
+				else
+					s6="true"
+				fi
+			fi
+		else
+			tput setaf 1
+			echo "The base register contains a letter other than 's' or 't' or is missing a '$' symbol"
+			s6="false"
+			tput setaf 7
+		fi
+	fi
+fi
+}
+
+
+specialDollarSign2(){
+if [[ $var_Length2 != 3 ]]; then
+	tput setaf 1																## Checks the second parameter to ensure it contains a dollar sign
+	echo "The second register is out of the range"												## an s or t and there appropriate numbers.
+	s6="false"
+	tput setaf 7
+else
+	if [[ "$r2" =~ '$s'[0-7] ]] || [[ "$r2" =~ '$t'[0-9] ]]
+	then
+		s6="true"
+		s8="true"
+	else
+		tput setaf 1
+		echo "The Second register contains a letter other than 's' or 't' or is missing a '$' symbol"
+		s6="false"
+		s8="false"
+		tput setaf 7
+	fi
+fi
+}
+
+
+dollarSign3(){																	## Checks the third parameter to ensure it contains a dollar sign
+if [[ $var_Length3 != 3 ]]; then														## an s or t and there appropriate numbers.
+	tput setaf 1
+	echo "The Third register is out of the range"
+	s7="false"
+	tput setaf 7
+else
+	if [[ "$r3" =~ '$s'[0-7] ]] || [[ "$r3" =~ '$t'[0-9] ]]
+	then
+		s7="true"
+	else
+		tput setaf 1
+		echo "The Third register contains a letter other than 's' or 't' or is missing a '$' symbol"
+		s7="false"
+		tput setaf 7
+	fi
+fi
+}
+
+
+checkImmediate(){																## Checks that the immediate is within the range of 16 bits
+if [[ "$r3" -gt 32767 ]] || [[ "$r3" -lt -32768 ]]; then
+	tput setaf 1
+	echo "The Immediate is outside the range of 16 bits"
+	s7="false"
+	tput setaf 7
+else
+	s7="true"
+fi
+}
+
+
+checkParameters(){																## This function checks whether the third dollar sign function
+dollarSign1																	## has to be used depending on if the maths parameter is
+																		## equal to one of the specific types.
+if [ $maths == "add" ] || [ $maths == "sub" ]; then
+	var_Length2=${#r2}
+	var_Length3=${#r3}
+	s8="true"
+	specialDollarSign2
+	dollarSign3
+	finalCheck
+	nextLine
+elif [ $maths == "addi" ]; then
+	s8="false"
+	var_Length2=${#r2}
+	specialDollarSign2
+	checkImmediate
+	finalCheck
+	nextLine
+elif [ $maths == "sw" ] || [ $maths == "lw" ] ; then
+	var_Length2=${#r2}
+	dollarSign2
+	finalCheck
+	nextLine
+fi
+}
+
+
+nextLine(){																	## Jumps to the next line in the code
+	n=$((n+1))
+}
+
+
+filename=$s1																	## Reads in the file which is stored in the s1 variable, line
+n=1																		## by line until the end of the file, and carries out each of the
+																		## functionsin the loop to check validity of the instructions.
+while read maths r1 r2 r3
+do
+	echo "$maths $r1 $r2 $r3"
+
+	s8="false"
+	var_Length=${#r1}
+	checkInstruction
+	checkParameters
+
+done < $filename
+
+
+
+dt=$(date '+%d/%m/%Y %H:%M:%S');
+echo "" >> $s3
+echo "$dt" >> $s3																## Stores and outputs the date and time that the file was read
+echo "---------------------------------" >> $s3													## as it helps separate the lines in the 2 files.
+echo "" >> $s3
+echo "" >> $s2
+echo "$dt" >> $s2
+echo "---------------------------------" >> $s2
+echo "" >> $s2
